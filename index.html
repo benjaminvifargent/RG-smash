@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMASH Tennis - Dashboard de Puissance</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&family=Syncopate:wght@700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="background-overlay"></div>
+    
+    <main class="container">
+        <header>
+            <h1 class="glitch-text" data-text="SMASH TENNIS">SMASH TENNIS</h1>
+            <div id="midi-status" class="status-badge disconnected">MIDI non connecté</div>
+        </header>
+
+        <section class="game-area">
+            <div class="power-display">
+                <div class="gauge-container">
+                    <svg class="gauge-svg" viewBox="0 0 200 200">
+                        <circle class="gauge-bg" cx="100" cy="100" r="90"></circle>
+                        <circle id="power-gauge" class="gauge-progress" cx="100" cy="100" r="90"></circle>
+                    </svg>
+                    <div class="speed-value">
+                        <span id="speed-number">0</span>
+                        <span class="unit">KM/H</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stats-panel">
+                <div class="stat-card">
+                    <h3>FORCE BRUTE</h3>
+                    <div class="jauge-horizontale">
+                        <div id="velocity-bar" class="fill"></div>
+                    </div>
+                    <span id="velocity-raw">0 / 127</span>
+                </div>
+                
+                <div class="history">
+                    <h3>DERNIERS COUPS</h3>
+                    <ul id="hit-list">
+                        <!-- Les items s'ajouteront ici -->
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <div id="instruction-overlay" class="overlay">
+            <div class="modal">
+                <h2>Prêt pour le Smash ?</h2>
+                <p>Connectez votre tambour MIDI et frappez fort !</p>
+                <button id="start-btn">DÉMARRER</button>
+            </div>
+        </div>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>

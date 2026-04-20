@@ -1,0 +1,312 @@
+:root {
+    --bg-color: #05070a;
+    --card-bg: rgba(20, 25, 35, 0.8);
+    --accent: #c6ff00; /* Tennis Ball Neon */
+    --accent-glow: rgba(198, 255, 0, 0.4);
+    --text-primary: #ffffff;
+    --text-secondary: #94a3b8;
+    --cyan: #00f2ff;
+    --glass-border: rgba(255, 255, 255, 0.1);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Outfit', sans-serif;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    overflow: hidden;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.background-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('bg.png') no-repeat center center;
+    background-size: cover;
+    z-index: -1;
+    filter: brightness(0.3) saturate(1.2);
+}
+
+.background-overlay::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at center, transparent 0%, rgba(5, 7, 10, 0.8) 100%);
+}
+
+@keyframes move-bg {
+    from { transform: translate(0, 0); }
+    to { transform: translate(-50px, -50px); }
+}
+
+.container {
+    width: 90%;
+    max-width: 1200px;
+    height: 90vh;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    padding: 2rem;
+    background: var(--card-bg);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: 30px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    position: relative;
+    overflow: hidden;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+h1 {
+    font-family: 'Syncopate', sans-serif;
+    font-size: 2.5rem;
+    letter-spacing: 5px;
+    background: linear-gradient(to right, #fff, var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 10px rgba(198, 255, 0, 0.3));
+}
+
+.status-badge {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    transition: all 0.3s ease;
+}
+
+.status-badge.disconnected {
+    background: rgba(255, 0, 85, 0.2);
+    color: #ff0055;
+    border: 1px solid #ff0055;
+}
+
+.status-badge.connected {
+    background: rgba(198, 255, 0, 0.2);
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    box-shadow: 0 0 15px var(--accent-glow);
+}
+
+.game-area {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 2rem;
+    min-height: 0;
+}
+
+/* Power Display / Gauge */
+.power-display {
+    background: rgba(0,0,0,0.3);
+    border-radius: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid var(--glass-border);
+}
+
+.gauge-container {
+    position: relative;
+    width: 400px;
+    height: 400px;
+}
+
+.gauge-svg {
+    transform: rotate(-90deg);
+}
+
+.gauge-bg {
+    fill: none;
+    stroke: rgba(255,255,255,0.05);
+    stroke-width: 15;
+}
+
+.gauge-progress {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 15;
+    stroke-linecap: round;
+    stroke-dasharray: 565.48; /* 2 * PI * R */
+    stroke-dashoffset: 565.48;
+    transition: stroke-dashoffset 0.1s ease-out;
+    filter: drop-shadow(0 0 8px var(--accent));
+}
+
+.speed-value {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+
+#speed-number {
+    display: block;
+    font-size: 8rem;
+    font-weight: 900;
+    line-height: 1;
+    color: white;
+    text-shadow: 0 0 30px rgba(255,255,255,0.2);
+}
+
+.unit {
+    font-size: 1.5rem;
+    letter-spacing: 10px;
+    color: var(--accent);
+    font-weight: bold;
+}
+
+/* Stats Panel */
+.stats-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.stat-card {
+    background: rgba(255,255,255,0.03);
+    padding: 1.5rem;
+    border-radius: 20px;
+    border: 1px solid var(--glass-border);
+}
+
+h3 {
+    font-size: 0.9rem;
+    letter-spacing: 2px;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+}
+
+.jauge-horizontale {
+    width: 100%;
+    height: 12px;
+    background: rgba(0,0,0,0.5);
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
+    overflow: hidden;
+}
+
+.jauge-horizontale .fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(to right, var(--cyan), var(--accent));
+    transition: width 0.1s ease-out;
+}
+
+.history {
+    flex: 1;
+    background: rgba(255,255,255,0.03);
+    padding: 1.5rem;
+    border-radius: 20px;
+    border: 1px solid var(--glass-border);
+    display: flex;
+    flex-direction: column;
+}
+
+#hit-list {
+    list-style: none;
+    overflow-y: auto;
+    flex: 1;
+    margin-top: 1rem;
+}
+
+.hit-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    animation: slide-in 0.3s ease-out;
+}
+
+@keyframes slide-in {
+    from { transform: translateX(20px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+.hit-item .hit-speed {
+    color: var(--accent);
+    font-weight: bold;
+}
+
+/* Overlay */
+.overlay {
+    position: absolute;
+    inset: 0;
+    backdrop-filter: blur(30px);
+    z-index: 100;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal {
+    text-align: center;
+    padding: 3rem;
+    background: rgba(0,0,0,0.5);
+    border: 1px solid var(--accent);
+    border-radius: 40px;
+    box-shadow: 0 0 50px rgba(198, 255, 0, 0.1);
+}
+
+.modal h2 {
+    font-size: 3rem;
+    color: white;
+    margin-bottom: 1rem;
+}
+
+#start-btn {
+    margin-top: 2rem;
+    padding: 1.5rem 4rem;
+    background: var(--accent);
+    color: black;
+    border: none;
+    border-radius: 50px;
+    font-size: 1.2rem;
+    font-weight: 900;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+#start-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 30px var(--accent);
+}
+
+/* Utility Animations */
+.shake {
+    animation: shake 0.2s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+@keyframes shake {
+  10%, 90% { transform: translate3d(-2px, 0, 0); }
+  20%, 80% { transform: translate3d(4px, 0, 0); }
+  30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
+  40%, 60% { transform: translate3d(6px, 0, 0); }
+}
+
+.hit-highlight {
+    animation: highlight 0.5s ease-out;
+}
+
+@keyframes highlight {
+    0% { filter: brightness(3); transform: scale(1.02); }
+    100% { filter: brightness(1); transform: scale(1); }
+}
