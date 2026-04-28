@@ -71,11 +71,70 @@
                         </svg>
                     </div>
                 </div>
+
+                <!-- Overlay déplacé ici -->
+                <div id="instruction-overlay" class="overlay">
+                    <div id="step-start" class="modal">
+                        <h2 class="titreModal">Prêt à mesurer <br>la puissance de ton coup droit ?</h2>
+                        <button id="start-btn">DÉMARRER</button>
+                    </div>
+
+                    <div id="step-pseudo" class="modal" style="display: none;">
+                        <h2 class="titreModal">Enregistre toi <br>et frappe fort !</h2>
+                        <div class="input-group">
+                            <input type="text" id="pseudo-input" placeholder="ENTRE TON PSEUDO..." maxlength="15"
+                                readonly>
+                        </div>
+
+                        <div id="virtual-keyboard" class="keyboard">
+                            <!-- Les touches seront générées en JS ou codées en dur ici -->
+                            <div class="keyboard-row">
+                                <button class="key">A</button><button class="key">Z</button><button
+                                    class="key">E</button><button class="key">R</button><button
+                                    class="key">T</button><button class="key">Y</button><button
+                                    class="key">U</button><button class="key">I</button><button
+                                    class="key">O</button><button class="key">P</button>
+                            </div>
+                            <div class="keyboard-row">
+                                <button class="key">Q</button><button class="key">S</button><button
+                                    class="key">D</button><button class="key">F</button><button
+                                    class="key">G</button><button class="key">H</button><button
+                                    class="key">J</button><button class="key">K</button><button
+                                    class="key">L</button><button class="key">M</button>
+                            </div>
+                            <div class="keyboard-row">
+                                <button class="key">W</button><button class="key">X</button><button
+                                    class="key">C</button><button class="key">V</button><button
+                                    class="key">B</button><button class="key">N</button>
+                                <button class="key special backspace">⌫</button>
+                            </div>
+                            <div class="keyboard-row">
+                                <button class="key special space">ESPACE</button>
+                                <button class="key special clear">EFFACER</button>
+                            </div>
+                        </div>
+
+                        <button id="validate-pseudo-btn">ENTRER SUR LE COURT</button>
+                    </div>
+
+                    <!-- Modal Record Top 10 -->
+                    <div id="step-record" class="modal record-modal" style="display: none;">
+                        <div class="record-badge">TOP 10</div>
+                        <div class="trophy-anim">🏆</div>
+                        <h2 class="gold-text titreModal">NOUVEAU RECORD !</h2>
+                        <p class="record-msg">Félicitations <span id="record-name">CHAMPION</span> !</p>
+                        <div class="record-display">
+                            <span id="record-speed-val">0</span>
+                            <span class="unit">KM/H</span>
+                        </div>
+                        <button id="record-close-btn">CONTINUER</button>
+                    </div>
+                </div>
             </div>
 
             <div class="stats-panel">
                 <div class="leaderboard">
-                    <h3>Rank. (TOP 10)</h3>
+                    <h3>RANKING (TOP 10)</h3>
                     <ul id="ranking-list">
                         <!-- Le classement s'affichera ici -->
                     </ul>
@@ -89,21 +148,6 @@
                 </div>
             </div>
         </section>
-
-        <div id="instruction-overlay" class="overlay">
-            <div id="step-start" class="modal">
-                <h2>Prêt à mesurer <br>la puissance de ton coup droit ?</h2>
-                <button id="start-btn">DÉMARRER</button>
-            </div>
-
-            <div id="step-pseudo" class="modal" style="display: none;">
-                <h2>Enregistre toi <br>et frappe fort !</h2>
-                <div class="input-group">
-                    <input type="text" id="pseudo-input" placeholder="ENTRE TON PSEUDO..." maxlength="15">
-                </div>
-                <button id="validate-pseudo-btn">ENTRER SUR LE COURT</button>
-            </div>
-        </div>
     </main>
 
     <script src="app.js"></script>

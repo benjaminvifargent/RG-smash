@@ -29,20 +29,25 @@ class SmashGame {
             stepStart: document.getElementById('step-start'),
             stepPseudo: document.getElementById('step-pseudo'),
             pseudoInput: document.getElementById('pseudo-input'),
-            validatePseudoBtn: document.getElementById('validate-pseudo-btn')
+            validatePseudoBtn: document.getElementById('validate-pseudo-btn'),
+            // Record elements
+            stepRecord: document.getElementById('step-record'),
+            recordName: document.getElementById('record-name'),
+            recordSpeedVal: document.getElementById('record-speed-val'),
+            recordCloseBtn: document.getElementById('record-close-btn')
         };
 
         this.init();
+        this.initKeyboard();
         this.updateLeaderboardUI();
     }
 
     init() {
-        // ... (rest of init)
         // Step 1: Start -> Show Pseudo Input
         this.elements.startBtn.addEventListener('click', () => {
             this.elements.stepStart.style.display = 'none';
             this.elements.stepPseudo.style.display = 'block';
-            this.elements.pseudoInput.focus();
+            // No need to focus since it's readonly
         });
 
         // Step 2: Validate Pseudo -> Start Game
@@ -58,7 +63,13 @@ class SmashGame {
             }
         });
 
-        // Allow Enter key
+        // Record Close
+        this.elements.recordCloseBtn.addEventListener('click', () => {
+            this.elements.overlay.style.display = 'none';
+            this.elements.stepRecord.style.display = 'none';
+        });
+
+        // Allow Enter key (if external keyboard connected)
         this.elements.pseudoInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') this.elements.validatePseudoBtn.click();
         });
@@ -73,9 +84,54 @@ class SmashGame {
         });
     }
 
+    initKeyboard() {
+        const keys = document.querySelectorAll('.key');
+        const input = this.elements.pseudoInput;
+
+        keys.forEach(key => {
+            key.addEventListener('click', () => {
+                const keyValue = key.textContent;
+
+                if (key.classList.contains('backspace')) {
+                    input.value = input.value.slice(0, -1);
+                } else if (key.classList.contains('clear')) {
+                    input.value = '';
+                } else if (key.classList.contains('space')) {
+                    if (input.value.length < 15) {
+                        input.value += ' ';
+                    }
+                } else {
+                    // Normal key
+                    if (input.value.length < 15) {
+                        input.value += keyValue;
+                    }
+                }
+
+                // Trigger a small pulse on input
+                input.classList.remove('hit-highlight');
+                void input.offsetWidth;
+                input.classList.add('hit-highlight');
+            });
+        });
+    }
+
     loadLeaderboard() {
         const saved = localStorage.getItem('smash_leaderboard');
-        return saved ? JSON.parse(saved) : [];
+        if (saved) return JSON.parse(saved);
+
+        // Default fake players for visualization
+        return [
+            { name: "RAFA", speed: 242, date: Date.now() },
+            { name: "ROGER", speed: 238, date: Date.now() },
+            { name: "NOVAK", speed: 235, date: Date.now() },
+            { name: "CARLOS", speed: 225, date: Date.now() },
+            { name: "JANNIK", speed: 220, date: Date.now() },
+            { name: "STEFANOS", speed: 215, date: Date.now() },
+            { name: "CASPER", speed: 210, date: Date.now() },
+            { name: "GAEL", speed: 205, date: Date.now() },
+            { name: "BEN", speed: 195, date: Date.now() },
+            { name: "ARTHUR", speed: 185, date: Date.now() }
+        ];
     }
 
     saveLeaderboard() {
@@ -181,8 +237,20 @@ class SmashGame {
         }
 
         this.updateUI();
+        const isRecord = this.addToLeaderboard(this.playerPseudo, calculatedSpeed);
         this.addHitToHistory(calculatedSpeed);
         this.triggerVisualEffects();
+
+        if (isRecord) {
+            this.showRecordModal(calculatedSpeed);
+        }
+    }
+
+    showRecordModal(speed) {
+        this.elements.recordName.textContent = this.playerPseudo;
+        this.elements.recordSpeedVal.textContent = speed;
+        this.elements.overlay.style.display = 'flex';
+        this.elements.stepRecord.style.display = 'flex';
     }
 
     updateUI() {
@@ -220,14 +288,21 @@ class SmashGame {
     }
 
     addToLeaderboard(name, speed) {
-        this.leaderboard.push({ name, speed, date: new Date().getTime() });
-        // Sort by speed DESC
-        this.leaderboard.sort((a, b) => b.speed - a.speed);
-        // Keep only top 10
-        this.leaderboard = this.leaderboard.slice(0, 10);
+        // Find if this speed enters top 10
+        const isTop10 = this.leaderboard.length < 10 || speed > this.leaderboard[this.leaderboard.length - 1].speed;
         
-        this.saveLeaderboard();
-        this.updateLeaderboardUI();
+        if (isTop10) {
+            this.leaderboard.push({ name, speed, date: new Date().getTime() });
+            // Sort by speed DESC
+            this.leaderboard.sort((a, b) => b.speed - a.speed);
+            // Keep only top 10
+            this.leaderboard = this.leaderboard.slice(0, 10);
+            
+            this.saveLeaderboard();
+            this.updateLeaderboardUI();
+            return true;
+        }
+        return false;
     }
 
     updateLeaderboardUI() {

@@ -138,6 +138,8 @@ h1 {
     align-items: center;
     border: 1px solid var(--glass-border);
     padding: 2rem;
+    position: relative;
+    overflow: hidden;
 }
 
 .gauges-wrapper {
@@ -450,6 +452,95 @@ h3 {
     box-shadow: 0 0 30px var(--accent);
 }
 
+/* Virtual Keyboard */
+.keyboard {
+    margin: 1.5rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    width: 100%;
+    max-width: 800px;
+}
+
+.keyboard-row {
+    display: flex;
+    justify-content: center;
+    gap: 0.6rem;
+}
+
+.key {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--glass-border);
+    color: white;
+    width: 65px;
+    height: 65px;
+    border-radius: 12px;
+    font-size: 1.5rem;
+    font-weight: 900;
+    cursor: pointer;
+    transition: all 0.1s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.key:active {
+    transform: scale(0.92);
+    background: var(--accent);
+    color: black;
+    box-shadow: 0 0 20px var(--accent-glow);
+    border-color: var(--accent);
+}
+
+.key.special {
+    font-size: 0.9rem;
+    padding: 0 1.5rem;
+    width: auto;
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.key.backspace {
+    width: 120px;
+    font-size: 1.5rem;
+    background: rgba(255, 0, 85, 0.2);
+    border-color: rgba(255, 0, 85, 0.3);
+    color: #ff0055;
+}
+
+.key.backspace:active {
+    background: #ff0055;
+    color: white;
+}
+
+.key.space {
+    flex: 2;
+    letter-spacing: 2px;
+}
+
+.key.clear {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-secondary);
+}
+
+.key.clear:active {
+    background: white;
+    color: black;
+}
+
+@media (max-height: 800px) {
+    .key {
+        width: 50px;
+        height: 50px;
+        font-size: 1.2rem;
+    }
+    .modal h2 {
+        font-size: 2rem;
+    }
+}
+
 /* Overlay */
 .overlay {
     position: absolute;
@@ -459,21 +550,105 @@ h3 {
     display: flex;
     justify-content: center;
     align-items: center;
+    border-radius: inherit;
 }
 
 .modal {
     text-align: center;
     padding: 3rem;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.8);
     border: 1px solid var(--accent);
     border-radius: 40px;
     box-shadow: 0 0 50px rgba(198, 255, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 90%;
 }
 
 .modal h2 {
     font-size: 3rem;
     color: white;
     margin-bottom: 1rem;
+}
+
+.titreModal {
+    text-transform: uppercase;
+    transform: rotate(-5deg) skewX(-5deg);
+    display: inline-block; /* Ensure transform applies correctly */
+}
+
+.gold-text {
+    background: linear-gradient(to bottom, #ffcc00, #ff9900);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 10px rgba(255, 204, 0, 0.5));
+    font-weight: 900;
+}
+
+.record-badge {
+    background: var(--accent);
+    color: black;
+    padding: 0.5rem 1.5rem;
+    border-radius: 50px;
+    font-weight: 900;
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+    animation: pulse-badge 1s infinite alternate;
+}
+
+@keyframes pulse-badge {
+    from { transform: scale(1); box-shadow: 0 0 10px var(--accent-glow); }
+    to { transform: scale(1.1); box-shadow: 0 0 25px var(--accent); }
+}
+
+.trophy-anim {
+    font-size: 6rem;
+    margin: 1rem 0;
+    animation: rotate-trophy 2s infinite ease-in-out;
+}
+
+@keyframes rotate-trophy {
+    0%, 100% { transform: rotate(-10deg) scale(1); }
+    50% { transform: rotate(10deg) scale(1.2); }
+}
+
+.record-display {
+    margin: 2rem 0;
+}
+
+#record-speed-val {
+    font-size: 8rem;
+    font-weight: 900;
+    color: white;
+    text-shadow: 0 0 30px rgba(255, 255, 255, 0.4);
+}
+
+.record-msg {
+    font-size: 1.5rem;
+    color: var(--text-secondary);
+}
+
+#record-name {
+    color: var(--accent);
+    font-weight: bold;
+}
+
+#record-close-btn {
+    padding: 1.2rem 4rem;
+    background: white;
+    color: black;
+    border: none;
+    border-radius: 50px;
+    font-size: 1.1rem;
+    font-weight: 900;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+#record-close-btn:hover {
+    background: var(--accent);
+    transform: scale(1.05);
 }
 
 #start-btn {
