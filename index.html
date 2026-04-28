@@ -1,46 +1,86 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SMASH Tennis - Dashboard de Puissance</title>
+    <title>THE POWER SHOT</title>
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&family=Syncopate:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&family=Syncopate:wght@700&display=swap"
+        rel="stylesheet">
 </head>
+
 <body>
     <div class="background-overlay"></div>
-    
+
     <main class="container">
         <header>
-            <h1 class="glitch-text" data-text="SMASH TENNIS">SMASH TENNIS</h1>
+            <div class="title-container">
+                <img src="logoWAT.svg" alt="WAT Logo" class="main-logo">
+                <h1 class="glitch-text" data-text="THE POWER SHOT">THE POWER SHOT</h1>
+            </div>
             <div id="midi-status" class="status-badge disconnected">MIDI non connecté</div>
         </header>
 
         <section class="game-area">
             <div class="power-display">
-                <div class="gauge-container">
-                    <svg class="gauge-svg" viewBox="0 0 200 200">
-                        <circle class="gauge-bg" cx="100" cy="100" r="90"></circle>
-                        <circle id="power-gauge" class="gauge-progress" cx="100" cy="100" r="90"></circle>
-                    </svg>
-                    <div class="speed-value">
-                        <span id="speed-number">0</span>
-                        <span class="unit">KM/H</span>
+                <div class="gauges-wrapper">
+                    <!-- Gauge Top: Force Brute -->
+                    <div class="gauge-section">
+                        <div class="gauge-title">FORCE BRUTE</div>
+                        <div class="gauge-container force-brute-gauge">
+                            <svg class="gauge-svg" viewBox="0 0 200 200">
+                                <circle class="gauge-bg" cx="100" cy="100" r="85"></circle>
+                                <circle id="velocity-gauge" class="gauge-progress velocity-color" cx="100" cy="100"
+                                    r="85"></circle>
+                            </svg>
+                            <div class="speed-value">
+                                <span id="velocity-raw">0</span>
+                                <span class="unit-small">/ 127</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="gauge-separator">
+                        <img src="swallow.svg" alt="Swallow" class="separator-icon">
+                    </div>
+
+                    <!-- Gauge Bottom: KM/H -->
+                    <div class="gauge-section">
+                        <div class="gauge-title">VITESSE REEL</div>
+                        <div class="gauge-container speed-kmh-gauge">
+                            <svg class="gauge-svg" viewBox="0 0 200 200">
+                                <circle class="gauge-bg" cx="100" cy="100" r="85"></circle>
+                                <circle id="power-gauge" class="gauge-progress" cx="100" cy="100" r="85"></circle>
+                            </svg>
+                            <div class="speed-value">
+                                <span id="speed-number">0</span>
+                                <span class="unit">KM/H</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="hit-instruction" class="hit-instruction">
+                    <span>PRENEZ UNE MASSUE BALLE ET FRAPPEZ DANS LE CERCLE EN BAS</span>
+                    <div class="instruction-arrow">
+                        <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M7 13l5 5 5-5M12 18V6" />
+                        </svg>
                     </div>
                 </div>
             </div>
 
             <div class="stats-panel">
-                <div class="stat-card">
-                    <h3>FORCE BRUTE</h3>
-                    <div class="jauge-horizontale">
-                        <div id="velocity-bar" class="fill"></div>
-                    </div>
-                    <span id="velocity-raw">0 / 127</span>
+                <div class="leaderboard">
+                    <h3>Rank. (TOP 10)</h3>
+                    <ul id="ranking-list">
+                        <!-- Le classement s'affichera ici -->
+                    </ul>
                 </div>
-                
+
                 <div class="history">
                     <h3>DERNIERS COUPS</h3>
                     <ul id="hit-list">
@@ -51,14 +91,22 @@
         </section>
 
         <div id="instruction-overlay" class="overlay">
-            <div class="modal">
-                <h2>Prêt pour le Smash ?</h2>
-                <p>Connectez votre tambour MIDI et frappez fort !</p>
+            <div id="step-start" class="modal">
+                <h2>Prêt à mesurer <br>la puissance de ton coup droit ?</h2>
                 <button id="start-btn">DÉMARRER</button>
+            </div>
+
+            <div id="step-pseudo" class="modal" style="display: none;">
+                <h2>Enregistre toi <br>et frappe fort !</h2>
+                <div class="input-group">
+                    <input type="text" id="pseudo-input" placeholder="ENTRE TON PSEUDO..." maxlength="15">
+                </div>
+                <button id="validate-pseudo-btn">ENTRER SUR LE COURT</button>
             </div>
         </div>
     </main>
 
     <script src="app.js"></script>
 </body>
+
 </html>

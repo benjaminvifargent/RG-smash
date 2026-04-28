@@ -7,36 +7,79 @@ class SmashGame {
         this.midiAccess = null;
         this.velocity = 0;
         this.speed = 0;
-        this.maxSpeed = 250; // km/h record simulation
+        this.maxSpeed = 250; 
         this.hits = [];
+        this.leaderboard = this.loadLeaderboard();
+        this.playerPseudo = "CHAMPION";
 
         // DOM Elements
         this.elements = {
             speedNumber: document.getElementById('speed-number'),
             powerGauge: document.getElementById('power-gauge'),
-            velocityBar: document.getElementById('velocity-bar'),
+            velocityGauge: document.getElementById('velocity-gauge'),
+            velocityBar: null, // Removed old bar
             velocityRaw: document.getElementById('velocity-raw'),
             hitList: document.getElementById('hit-list'),
+            rankingList: document.getElementById('ranking-list'),
             midiStatus: document.getElementById('midi-status'),
             container: document.querySelector('.container'),
             overlay: document.getElementById('instruction-overlay'),
-            startBtn: document.getElementById('start-btn')
+            hitInstruction: document.getElementById('hit-instruction'),
+            startBtn: document.getElementById('start-btn'),
+            stepStart: document.getElementById('step-start'),
+            stepPseudo: document.getElementById('step-pseudo'),
+            pseudoInput: document.getElementById('pseudo-input'),
+            validatePseudoBtn: document.getElementById('validate-pseudo-btn')
         };
 
         this.init();
+        this.updateLeaderboardUI();
     }
 
     init() {
+        // ... (rest of init)
+        // Step 1: Start -> Show Pseudo Input
         this.elements.startBtn.addEventListener('click', () => {
-            this.elements.overlay.style.display = 'none';
-            this.requestMIDI();
+            this.elements.stepStart.style.display = 'none';
+            this.elements.stepPseudo.style.display = 'block';
+            this.elements.pseudoInput.focus();
         });
 
-        // Initialize Gauge circumference
-        const radius = 90;
+        // Step 2: Validate Pseudo -> Start Game
+        this.elements.validatePseudoBtn.addEventListener('click', () => {
+            const val = this.elements.pseudoInput.value.trim();
+            if (val.length >= 2) {
+                this.playerPseudo = val.toUpperCase();
+                this.elements.overlay.style.display = 'none';
+                this.requestMIDI();
+            } else {
+                this.elements.pseudoInput.classList.add('shake');
+                setTimeout(() => this.elements.pseudoInput.classList.remove('shake'), 500);
+            }
+        });
+
+        // Allow Enter key
+        this.elements.pseudoInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') this.elements.validatePseudoBtn.click();
+        });
+
+        // Initialize Gauges circumference
+        const radius = 85;
         this.circumference = 2 * Math.PI * radius;
-        this.elements.powerGauge.style.strokeDasharray = `${this.circumference} ${this.circumference}`;
-        this.elements.powerGauge.style.strokeDashoffset = this.circumference;
+        
+        [this.elements.powerGauge, this.elements.velocityGauge].forEach(gauge => {
+            gauge.style.strokeDasharray = `${this.circumference} ${this.circumference}`;
+            gauge.style.strokeDashoffset = this.circumference;
+        });
+    }
+
+    loadLeaderboard() {
+        const saved = localStorage.getItem('smash_leaderboard');
+        return saved ? JSON.parse(saved) : [];
+    }
+
+    saveLeaderboard() {
+        localStorage.setItem('smash_leaderboard', JSON.stringify(this.leaderboard));
     }
 
     async requestMIDI() {
@@ -133,22 +176,25 @@ class SmashGame {
         this.velocity = rawVelocity;
         this.speed = calculatedSpeed;
 
+        if (this.elements.hitInstruction) {
+            this.elements.hitInstruction.classList.add('hidden');
+        }
+
         this.updateUI();
         this.addHitToHistory(calculatedSpeed);
         this.triggerVisualEffects();
     }
 
     updateUI() {
-        // Speed Display
+        // KM/H Gauge
         this.animateValue(this.elements.speedNumber, parseInt(this.elements.speedNumber.textContent), this.speed, 200);
+        const speedOffset = this.circumference - (this.speed / this.maxSpeed) * this.circumference;
+        this.elements.powerGauge.style.strokeDashoffset = speedOffset;
 
-        // Gauge Display
-        const offset = this.circumference - (this.speed / this.maxSpeed) * this.circumference;
-        this.elements.powerGauge.style.strokeDashoffset = offset;
-
-        // Raw Velocity Bar
-        this.elements.velocityBar.style.width = `${(this.velocity / 127) * 100}%`;
-        this.elements.velocityRaw.textContent = `${this.velocity} / 127`;
+        // Force Brute Gauge (Circular)
+        this.animateValue(this.elements.velocityRaw, parseInt(this.elements.velocityRaw.textContent), this.velocity, 200);
+        const velocityOffset = this.circumference - (this.velocity / 127) * this.circumference;
+        this.elements.velocityGauge.style.strokeDashoffset = velocityOffset;
     }
 
     addHitToHistory(speed) {
@@ -158,16 +204,44 @@ class SmashGame {
         const timeStr = `${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
 
         li.innerHTML = `
-            <span class="hit-time">${timeStr}</span>
+            <span class="hit-time">${this.playerPseudo} • ${timeStr}</span>
             <span class="hit-speed">${speed} KM/H</span>
         `;
 
         this.elements.hitList.prepend(li);
 
-        // Keep only last 10
+        // Keep only last 10 in history
         if (this.elements.hitList.children.length > 10) {
             this.elements.hitList.lastChild.remove();
         }
+
+        // Add to permanent leaderboard
+        this.addToLeaderboard(this.playerPseudo, speed);
+    }
+
+    addToLeaderboard(name, speed) {
+        this.leaderboard.push({ name, speed, date: new Date().getTime() });
+        // Sort by speed DESC
+        this.leaderboard.sort((a, b) => b.speed - a.speed);
+        // Keep only top 10
+        this.leaderboard = this.leaderboard.slice(0, 10);
+        
+        this.saveLeaderboard();
+        this.updateLeaderboardUI();
+    }
+
+    updateLeaderboardUI() {
+        this.elements.rankingList.innerHTML = '';
+        this.leaderboard.forEach((entry, index) => {
+            const li = document.createElement('li');
+            li.className = 'ranking-item';
+            li.innerHTML = `
+                <span class="rank">#${index + 1}</span>
+                <span class="name">${entry.name}</span>
+                <span class="speed">${entry.speed} KM/H</span>
+            `;
+            this.elements.rankingList.appendChild(li);
+        });
     }
 
     triggerVisualEffects() {
