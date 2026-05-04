@@ -26,15 +26,22 @@
 
         <section class="game-area">
             <div class="power-display">
+                <div id="hits-left-display" class="hits-left">2 x FRAPPES</div>
                 <div class="gauges-wrapper">
                     <!-- Gauge Top: Force Brute -->
                     <div class="gauge-section">
                         <div class="gauge-title">FORCE BRUTE</div>
                         <div class="gauge-container force-brute-gauge">
                             <svg class="gauge-svg" viewBox="0 0 200 200">
+                                <defs>
+                                    <linearGradient id="cyanGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" stop-color="#7be335" />
+                                        <stop offset="100%" stop-color="#a8ff60" />
+                                    </linearGradient>
+                                </defs>
                                 <circle class="gauge-bg" cx="100" cy="100" r="85"></circle>
                                 <circle id="velocity-gauge" class="gauge-progress velocity-color" cx="100" cy="100"
-                                    r="85"></circle>
+                                    r="85" stroke="url(#cyanGradient)"></circle>
                             </svg>
                             <div class="speed-value">
                                 <span id="velocity-raw">0</span>
@@ -52,8 +59,14 @@
                         <div class="gauge-title">VITESSE REEL</div>
                         <div class="gauge-container speed-kmh-gauge">
                             <svg class="gauge-svg" viewBox="0 0 200 200">
+                                <defs>
+                                    <linearGradient id="yellowGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" stop-color="#ffff31" />
+                                        <stop offset="100%" stop-color="#ffcc00" />
+                                    </linearGradient>
+                                </defs>
                                 <circle class="gauge-bg" cx="100" cy="100" r="85"></circle>
-                                <circle id="power-gauge" class="gauge-progress" cx="100" cy="100" r="85"></circle>
+                                <circle id="power-gauge" class="gauge-progress" cx="100" cy="100" r="85" stroke="url(#yellowGradient)"></circle>
                             </svg>
                             <div class="speed-value">
                                 <span id="speed-number">0</span>
@@ -114,7 +127,26 @@
                             </div>
                         </div>
 
-                        <button id="validate-pseudo-btn">ENTRER SUR LE COURT</button>
+                        <button id="validate-pseudo-btn">VALIDER</button>
+                    </div>
+
+                    <!-- Nouveau : Sélection Genre -->
+                    <div id="step-gender" class="modal" style="display: none;">
+                        <h2 class="titreModal">Es-tu ?</h2>
+                        <div class="selection-grid">
+                            <button class="select-btn gender-btn" data-gender="M">HOMME</button>
+                            <button class="select-btn gender-btn" data-gender="F">FEMME</button>
+                        </div>
+                    </div>
+
+                    <!-- Nouveau : Sélection Âge -->
+                    <div id="step-age" class="modal" style="display: none;">
+                        <h2 class="titreModal">Ton âge ?</h2>
+                        <div class="selection-grid">
+                            <button class="select-btn age-btn" data-age="junior">ENFANT (-15 ans)</button>
+                            <button class="select-btn age-btn" data-age="adult">ADULTE (16-50 ans)</button>
+                            <button class="select-btn age-btn" data-age="senior">SENIOR (51+ ans)</button>
+                        </div>
                     </div>
 
                     <!-- Modal Record Top 10 -->

@@ -7,10 +7,14 @@ class SmashGame {
         this.midiAccess = null;
         this.velocity = 0;
         this.speed = 0;
-        this.maxSpeed = 250; 
+        this.maxSpeed = 260;
         this.hits = [];
         this.leaderboard = this.loadLeaderboard();
         this.playerPseudo = "CHAMPION";
+        this.playerGender = "M";
+        this.playerAge = "adult";
+        this.hitsThisSession = 0;
+        this.isCooldown = false;
 
         // DOM Elements
         this.elements = {
@@ -30,11 +34,17 @@ class SmashGame {
             stepPseudo: document.getElementById('step-pseudo'),
             pseudoInput: document.getElementById('pseudo-input'),
             validatePseudoBtn: document.getElementById('validate-pseudo-btn'),
+            // Profile elements
+            stepGender: document.getElementById('step-gender'),
+            stepAge: document.getElementById('step-age'),
+            genderBtns: document.querySelectorAll('.gender-btn'),
+            ageBtns: document.querySelectorAll('.age-btn'),
             // Record elements
             stepRecord: document.getElementById('step-record'),
             recordName: document.getElementById('record-name'),
             recordSpeedVal: document.getElementById('record-speed-val'),
-            recordCloseBtn: document.getElementById('record-close-btn')
+            recordCloseBtn: document.getElementById('record-close-btn'),
+            hitsLeftDisplay: document.getElementById('hits-left-display')
         };
 
         this.init();
@@ -50,23 +60,41 @@ class SmashGame {
             // No need to focus since it's readonly
         });
 
-        // Step 2: Validate Pseudo -> Start Game
+        // Step 2: Validate Pseudo -> Show Gender selection
         this.elements.validatePseudoBtn.addEventListener('click', () => {
             const val = this.elements.pseudoInput.value.trim();
             if (val.length >= 2) {
                 this.playerPseudo = val.toUpperCase();
-                this.elements.overlay.style.display = 'none';
-                this.requestMIDI();
+                this.elements.stepPseudo.style.display = 'none';
+                this.elements.stepGender.style.display = 'block';
             } else {
                 this.elements.pseudoInput.classList.add('shake');
                 setTimeout(() => this.elements.pseudoInput.classList.remove('shake'), 500);
             }
         });
 
-        // Record Close
+        // Step 3: Select Gender -> Show Age selection
+        this.elements.genderBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                this.playerGender = btn.dataset.gender;
+                this.elements.stepGender.style.display = 'none';
+                this.elements.stepAge.style.display = 'block';
+            });
+        });
+
+        // Step 4: Select Age -> Start Game
+        this.elements.ageBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                this.playerAge = btn.dataset.age;
+                this.elements.stepAge.style.display = 'none';
+                this.elements.overlay.style.display = 'none';
+                this.requestMIDI();
+            });
+        });
+
+        // Record Close -> Reset Game for next player
         this.elements.recordCloseBtn.addEventListener('click', () => {
-            this.elements.overlay.style.display = 'none';
-            this.elements.stepRecord.style.display = 'none';
+            this.resetGame();
         });
 
         // Allow Enter key (if external keyboard connected)
@@ -77,7 +105,7 @@ class SmashGame {
         // Initialize Gauges circumference
         const radius = 85;
         this.circumference = 2 * Math.PI * radius;
-        
+
         [this.elements.powerGauge, this.elements.velocityGauge].forEach(gauge => {
             gauge.style.strokeDasharray = `${this.circumference} ${this.circumference}`;
             gauge.style.strokeDashoffset = this.circumference;
@@ -200,10 +228,9 @@ class SmashGame {
 
     updateMIDIStatus(connected) {
         if (connected) {
-            this.elements.midiStatus.textContent = "MIDI Connecté";
-            this.elements.midiStatus.classList.remove('disconnected');
-            this.elements.midiStatus.classList.add('connected');
+            this.elements.midiStatus.style.display = 'none';
         } else {
+            this.elements.midiStatus.style.display = 'block';
             this.elements.midiStatus.textContent = "MIDI Déconnecté";
             this.elements.midiStatus.classList.remove('connected');
             this.elements.midiStatus.classList.add('disconnected');
@@ -223,11 +250,22 @@ class SmashGame {
     }
 
     onHit(rawVelocity) {
-        // Calculation: Simulation de vitesse
-        // On utilise une courbe légèrement exponentielle pour plus de sensations
-        // 127 velocity -> ~250 km/h
-        const normalized = rawVelocity / 127;
-        const calculatedSpeed = Math.round(Math.pow(normalized, 1.1) * this.maxSpeed);
+        if (this.isCooldown) return;
+
+        this.isCooldown = true;
+        setTimeout(() => this.isCooldown = false, 4000);
+
+        let calculatedSpeed = 0;
+
+        // Si la vélocité est haute (> 120), on considère que le pad sature
+        // On utilise alors une fourchette aléatoire basée sur le profil
+        if (rawVelocity >= 120) {
+            calculatedSpeed = this.calculateOptimizedSpeed(this.playerGender, this.playerAge);
+        } else {
+            // Courbe standard réduite : on divise par 2 par rapport à l'ancienne version (220 -> 110)
+            const normalized = rawVelocity / 127;
+            calculatedSpeed = Math.round(Math.pow(normalized, 1.1) * 110);
+        }
 
         this.velocity = rawVelocity;
         this.speed = calculatedSpeed;
@@ -240,29 +278,78 @@ class SmashGame {
         const isRecord = this.addToLeaderboard(this.playerPseudo, calculatedSpeed);
         this.addHitToHistory(calculatedSpeed);
         this.triggerVisualEffects();
+        this.hitsThisSession++;
+        this.updateHitsLeftUI();
 
         if (isRecord) {
             this.showRecordModal(calculatedSpeed);
+        } else if (this.hitsThisSession >= 2) {
+            // Si pas de record mais 2 coups atteints, on attend 5s avant de reset pour laisser voir le score
+            setTimeout(() => {
+                if (this.hitsThisSession >= 2) { // Double check if still in session
+                    this.resetGame();
+                }
+            }, 5000);
         }
     }
 
     showRecordModal(speed) {
         this.elements.recordName.textContent = this.playerPseudo;
         this.elements.recordSpeedVal.textContent = speed;
+
+        // Hide all modals in the overlay first
+        this.elements.overlay.querySelectorAll('.modal').forEach(modal => {
+            modal.style.display = 'none';
+        });
+
         this.elements.overlay.style.display = 'flex';
         this.elements.stepRecord.style.display = 'flex';
     }
 
+    calculateOptimizedSpeed(gender, age) {
+        // Fourchettes de vitesse réduites proportionnellement (Max 260)
+        const ranges = {
+            'M': {
+                'junior': [100, 150],
+                'adult': [180, 260],
+                'senior': [130, 180]
+            },
+            'F': {
+                'junior': [90, 130],
+                'adult': [150, 230],
+                'senior': [120, 170]
+            }
+        };
+
+        const range = ranges[gender][age] || [120, 180];
+        const base = range[0];
+        const span = range[1] - range[0];
+
+        // On génère une valeur aléatoire dans la fourchette
+        return Math.floor(base + (Math.random() * span));
+    }
+
     updateUI() {
         // KM/H Gauge
-        this.animateValue(this.elements.speedNumber, parseInt(this.elements.speedNumber.textContent), this.speed, 200);
+        this.animateValue(this.elements.speedNumber, parseInt(this.elements.speedNumber.textContent), this.speed, 3000);
         const speedOffset = this.circumference - (this.speed / this.maxSpeed) * this.circumference;
         this.elements.powerGauge.style.strokeDashoffset = speedOffset;
 
         // Force Brute Gauge (Circular)
-        this.animateValue(this.elements.velocityRaw, parseInt(this.elements.velocityRaw.textContent), this.velocity, 200);
+        this.animateValue(this.elements.velocityRaw, parseInt(this.elements.velocityRaw.textContent), this.velocity, 3000);
         const velocityOffset = this.circumference - (this.velocity / 127) * this.circumference;
         this.elements.velocityGauge.style.strokeDashoffset = velocityOffset;
+    }
+
+    updateHitsLeftUI() {
+        const remaining = 2 - this.hitsThisSession;
+        if (remaining > 1) {
+            this.elements.hitsLeftDisplay.textContent = `${remaining} x FRAPPES`;
+        } else if (remaining === 1) {
+            this.elements.hitsLeftDisplay.textContent = `1 x FRAPPE`;
+        } else {
+            this.elements.hitsLeftDisplay.textContent = `FINI`;
+        }
     }
 
     addHitToHistory(speed) {
@@ -278,8 +365,8 @@ class SmashGame {
 
         this.elements.hitList.prepend(li);
 
-        // Keep only last 10 in history
-        if (this.elements.hitList.children.length > 10) {
+        // Keep only last 5 in history
+        while (this.elements.hitList.children.length > 5) {
             this.elements.hitList.lastChild.remove();
         }
 
@@ -290,14 +377,14 @@ class SmashGame {
     addToLeaderboard(name, speed) {
         // Find if this speed enters top 10
         const isTop10 = this.leaderboard.length < 10 || speed > this.leaderboard[this.leaderboard.length - 1].speed;
-        
+
         if (isTop10) {
             this.leaderboard.push({ name, speed, date: new Date().getTime() });
             // Sort by speed DESC
             this.leaderboard.sort((a, b) => b.speed - a.speed);
             // Keep only top 10
             this.leaderboard = this.leaderboard.slice(0, 10);
-            
+
             this.saveLeaderboard();
             this.updateLeaderboardUI();
             return true;
@@ -342,6 +429,41 @@ class SmashGame {
             }
         };
         window.requestAnimationFrame(step);
+    }
+    resetGame() {
+        // Reset internal state
+        this.velocity = 0;
+        this.speed = 0;
+        this.playerPseudo = "CHAMPION";
+        this.playerGender = "M";
+        this.playerAge = "adult";
+        this.hitsThisSession = 0;
+
+        // Reset UI values
+        this.elements.speedNumber.textContent = "0";
+        this.elements.velocityRaw.textContent = "0";
+        this.elements.pseudoInput.value = "";
+
+        // Reset Gauges
+        this.elements.powerGauge.style.strokeDashoffset = this.circumference;
+        this.elements.velocityGauge.style.strokeDashoffset = this.circumference;
+
+        // Reset Overlay state
+        this.elements.overlay.querySelectorAll('.modal').forEach(modal => {
+            modal.style.display = 'none';
+        });
+
+        // Return to start screen
+        this.elements.stepStart.style.display = 'block';
+        this.elements.overlay.style.display = 'flex';
+
+        // Re-show instruction for hitting
+        if (this.elements.hitInstruction) {
+            this.elements.hitInstruction.classList.remove('hidden');
+        }
+
+        // Reset hits display
+        this.updateHitsLeftUI();
     }
 }
 
