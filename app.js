@@ -57,7 +57,11 @@ class SmashGame {
         this.elements.startBtn.addEventListener('click', () => {
             this.elements.stepStart.style.display = 'none';
             this.elements.stepPseudo.style.display = 'block';
-            // No need to focus since it's readonly
+            
+            // On demande le MIDI une seule fois dès le premier clic
+            if (!this.midiAccess) {
+                this.requestMIDI();
+            }
         });
 
         // Step 2: Validate Pseudo -> Show Gender selection
@@ -88,7 +92,7 @@ class SmashGame {
                 this.playerAge = btn.dataset.age;
                 this.elements.stepAge.style.display = 'none';
                 this.elements.overlay.style.display = 'none';
-                this.requestMIDI();
+                // requestMIDI() a été déplacé au tout début pour ne pas se reconnecter à chaque fois
             });
         });
 
