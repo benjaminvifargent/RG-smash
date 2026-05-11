@@ -359,11 +359,9 @@ class SmashGame {
     addHitToHistory(speed) {
         const li = document.createElement('li');
         li.className = 'hit-item';
-        const now = new Date();
-        const timeStr = `${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
 
         li.innerHTML = `
-            <span class="hit-time">${this.playerPseudo} • ${timeStr}</span>
+            <span class="hit-time">${this.playerPseudo}</span>
             <span class="hit-speed">${speed} KM/H</span>
         `;
 
