@@ -44,7 +44,10 @@ class SmashGame {
             recordName: document.getElementById('record-name'),
             recordSpeedVal: document.getElementById('record-speed-val'),
             recordCloseBtn: document.getElementById('record-close-btn'),
-            hitsLeftDisplay: document.getElementById('hits-left-display')
+            hitsLeftDisplay: document.getElementById('hits-left-display'),
+            // Countdown elements
+            stepCountdown: document.getElementById('step-countdown'),
+            countdownNumber: document.getElementById('countdown-number')
         };
 
         this.init();
@@ -67,13 +70,15 @@ class SmashGame {
         // Step 2: Validate Pseudo -> Show Gender selection
         this.elements.validatePseudoBtn.addEventListener('click', () => {
             const val = this.elements.pseudoInput.value.trim();
-            if (val.length >= 2) {
+            if (val.length >= 5) {
                 this.playerPseudo = val.toUpperCase();
                 this.elements.stepPseudo.style.display = 'none';
                 this.elements.stepGender.style.display = 'block';
             } else {
-                this.elements.pseudoInput.classList.add('shake');
-                setTimeout(() => this.elements.pseudoInput.classList.remove('shake'), 500);
+                this.elements.stepPseudo.classList.remove('error-shake');
+                void this.elements.stepPseudo.offsetWidth; // Trigger reflow
+                this.elements.stepPseudo.classList.add('error-shake');
+                setTimeout(() => this.elements.stepPseudo.classList.remove('error-shake'), 500);
             }
         });
 
@@ -86,13 +91,12 @@ class SmashGame {
             });
         });
 
-        // Step 4: Select Age -> Start Game
+        // Step 4: Select Age -> Start Game (Start countdown)
         this.elements.ageBtns.forEach(btn => {
             btn.addEventListener('click', () => {
                 this.playerAge = btn.dataset.age;
                 this.elements.stepAge.style.display = 'none';
-                this.elements.overlay.style.display = 'none';
-                // requestMIDI() a été déplacé au tout début pour ne pas se reconnecter à chaque fois
+                this.startCountdown();
             });
         });
 
@@ -287,10 +291,10 @@ class SmashGame {
 
         if (isRecord) {
             this.showRecordModal(calculatedSpeed);
-        } else if (this.hitsThisSession >= 2) {
-            // Si pas de record mais 2 coups atteints, on attend 5s avant de reset pour laisser voir le score
+        } else if (this.hitsThisSession >= 1) {
+            // Si pas de record mais 1 coup atteint, on attend 5s avant de reset pour laisser voir le score
             setTimeout(() => {
-                if (this.hitsThisSession >= 2) { // Double check if still in session
+                if (this.hitsThisSession >= 1) { // Double check if still in session
                     this.resetGame();
                 }
             }, 5000);
@@ -346,10 +350,8 @@ class SmashGame {
     }
 
     updateHitsLeftUI() {
-        const remaining = 2 - this.hitsThisSession;
-        if (remaining > 1) {
-            this.elements.hitsLeftDisplay.textContent = `${remaining} x FRAPPES`;
-        } else if (remaining === 1) {
+        const remaining = 1 - this.hitsThisSession;
+        if (remaining === 1) {
             this.elements.hitsLeftDisplay.textContent = `1 x FRAPPE`;
         } else {
             this.elements.hitsLeftDisplay.textContent = `FINI`;
@@ -431,6 +433,36 @@ class SmashGame {
             }
         };
         window.requestAnimationFrame(step);
+    }
+
+    startCountdown() {
+        this.isCooldown = true; // Bloque les frappes physiques pendant le décompte
+        this.elements.stepCountdown.style.display = 'flex';
+        this.elements.overlay.style.display = 'flex';
+        
+        let count = 3;
+        this.elements.countdownNumber.textContent = count;
+        this.elements.countdownNumber.classList.remove('go');
+        
+        // Force reflow pour relancer l'animation CSS
+        void this.elements.countdownNumber.offsetWidth;
+
+        const interval = setInterval(() => {
+            count--;
+            if (count > 0) {
+                this.elements.countdownNumber.textContent = count;
+                void this.elements.countdownNumber.offsetWidth; // Force re-pulse CSS
+            } else if (count === 0) {
+                this.elements.countdownNumber.textContent = "FRAPPEZ !";
+                this.elements.countdownNumber.classList.add('go');
+                void this.elements.countdownNumber.offsetWidth; // Force re-pulse CSS
+            } else {
+                clearInterval(interval);
+                this.elements.stepCountdown.style.display = 'none';
+                this.elements.overlay.style.display = 'none';
+                this.isCooldown = false; // Le joueur peut frapper maintenant
+            }
+        }, 1000);
     }
     resetGame() {
         // Reset internal state

@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>THE POWER SHOT</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=1.2">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&family=Syncopate:wght@700&display=swap"
@@ -26,7 +26,7 @@
 
         <section class="game-area">
             <div class="power-display">
-                <div id="hits-left-display" class="hits-left">2 x FRAPPES</div>
+                <div id="hits-left-display" class="hits-left">1 x FRAPPE</div>
                 <div class="gauges-wrapper">
                     <!-- Gauge Top: Force Brute -->
                     <div class="gauge-section">
@@ -95,7 +95,7 @@
                     <div id="step-pseudo" class="modal" style="display: none;">
                         <h2 class="titreModal">Enregistre toi <br>et frappe fort !</h2>
                         <div class="input-group">
-                            <input type="text" id="pseudo-input" placeholder="ENTRE TON PSEUDO..." maxlength="15"
+                            <input type="text" id="pseudo-input" placeholder="ENTRE TON PSEUDO (MINIMUM 5 CARACTERES)" maxlength="15"
                                 readonly>
                         </div>
 
@@ -149,6 +149,11 @@
                         </div>
                     </div>
 
+                    <!-- Nouveau : Compte à rebours -->
+                    <div id="step-countdown" class="modal countdown-modal" style="display: none;">
+                        <div id="countdown-number" class="countdown-text">3</div>
+                    </div>
+
                     <!-- Modal Record Top 10 -->
                     <div id="step-record" class="modal record-modal" style="display: none;">
                         <div class="record-badge">TOP 10</div>
@@ -182,7 +187,7 @@
         </section>
     </main>
 
-    <script src="app.js"></script>
+    <script src="app.js?v=1.2"></script>
 </body>
 
 </html>
