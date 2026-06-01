@@ -373,9 +373,6 @@ class SmashGame {
         while (this.elements.hitList.children.length > 5) {
             this.elements.hitList.lastChild.remove();
         }
-
-        // Add to permanent leaderboard
-        this.addToLeaderboard(this.playerPseudo, speed);
     }
 
     addToLeaderboard(name, speed) {
