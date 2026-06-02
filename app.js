@@ -153,21 +153,50 @@ class SmashGame {
 
     loadLeaderboard() {
         const saved = localStorage.getItem('smash_leaderboard');
-        if (saved) return JSON.parse(saved);
+        let list = [];
+        if (saved) {
+            try {
+                list = JSON.parse(saved);
+            } catch (e) {
+                list = [];
+            }
+        } else {
+            // Default fake players for visualization
+            list = [
+                { name: "RAFA", speed: 242, date: Date.now() },
+                { name: "ROGER", speed: 238, date: Date.now() },
+                { name: "NOVAK", speed: 235, date: Date.now() },
+                { name: "CARLOS", speed: 225, date: Date.now() },
+                { name: "JANNIK", speed: 220, date: Date.now() },
+                { name: "STEFANOS", speed: 215, date: Date.now() },
+                { name: "CASPER", speed: 210, date: Date.now() },
+                { name: "GAEL", speed: 205, date: Date.now() },
+                { name: "BEN", speed: 195, date: Date.now() },
+                { name: "ARTHUR", speed: 185, date: Date.now() }
+            ];
+        }
 
-        // Default fake players for visualization
-        return [
-            { name: "RAFA", speed: 242, date: Date.now() },
-            { name: "ROGER", speed: 238, date: Date.now() },
-            { name: "NOVAK", speed: 235, date: Date.now() },
-            { name: "CARLOS", speed: 225, date: Date.now() },
-            { name: "JANNIK", speed: 220, date: Date.now() },
-            { name: "STEFANOS", speed: 215, date: Date.now() },
-            { name: "CASPER", speed: 210, date: Date.now() },
-            { name: "GAEL", speed: 205, date: Date.now() },
-            { name: "BEN", speed: 195, date: Date.now() },
-            { name: "ARTHUR", speed: 185, date: Date.now() }
-        ];
+        // Clean duplicates (same name, same speed, and date within 5000ms)
+        const cleaned = [];
+        let hasDuplicates = false;
+        for (const entry of list) {
+            const isDup = cleaned.some(item => 
+                item.name === entry.name && 
+                item.speed === entry.speed && 
+                Math.abs(item.date - entry.date) < 5000
+            );
+            if (isDup) {
+                hasDuplicates = true;
+            } else {
+                cleaned.push(entry);
+            }
+        }
+
+        if (hasDuplicates && saved) {
+            localStorage.setItem('smash_leaderboard', JSON.stringify(cleaned));
+        }
+
+        return cleaned;
     }
 
     saveLeaderboard() {
